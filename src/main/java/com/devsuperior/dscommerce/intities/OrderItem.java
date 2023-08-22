@@ -1,4 +1,6 @@
 package com.devsuperior.dscommerce.intities;
+import java.util.List;
+
 import jakarta.persistence.EmbeddedId;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;

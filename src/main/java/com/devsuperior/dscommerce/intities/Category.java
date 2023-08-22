@@ -50,5 +50,4 @@ public class Category {
 		return products;
 	}
 	
-	
 }
