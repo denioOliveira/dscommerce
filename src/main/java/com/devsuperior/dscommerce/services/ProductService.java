@@ -7,8 +7,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.devsuperior.dscommerce.dto.ProductDTO;
+import com.devsuperior.dscommerce.exeptions.ResouceNotFoundException;
 import com.devsuperior.dscommerce.intities.Product;
 import com.devsuperior.dscommerce.repositories.ProductRepository;
+
+import jakarta.persistence.EntityNotFoundException;
 
 @Service
 public class ProductService {
@@ -18,7 +21,8 @@ public class ProductService {
 
 	@Transactional(readOnly = true)
 	public ProductDTO findById(Long id) {
-		Product product = repository.findById(id).get();
+		Product product = repository.findById(id).orElseThrow(
+				() -> new ResouceNotFoundException("Recurso não encontrado"));
 		return new ProductDTO(product);
 		
 		/* 
@@ -46,10 +50,16 @@ public class ProductService {
 
 	@Transactional
 	public ProductDTO upDate(Long id, ProductDTO dto) {
-		Product entity = repository.getReferenceById(id);
-		copyToEntity(dto, entity);
-		entity = repository.save(entity);
-		return new ProductDTO(entity);
+		try {
+			Product entity = repository.getReferenceById(id);
+			copyToEntity(dto, entity);
+			entity = repository.save(entity);
+			return new ProductDTO(entity);
+		}
+		catch(EntityNotFoundException e) {
+			throw new ResouceNotFoundException("Recurso não encontrado");
+		}
+		
 	}
 	
 	private void copyToEntity(ProductDTO dto, Product entity) {
@@ -57,5 +67,13 @@ public class ProductService {
 		entity.setDescription(dto.getDescription());
 		entity.setPrice(dto.getPrice());
 		entity.setImgUrl(dto.getImgUrl());
+	}
+	
+	@Transactional
+	public void delete(Long id) {
+		if(!repository.existsById(id)) {
+			throw new ResouceNotFoundException("Recurso não encontrado");
+		}
+		repository.deleteById(id);
 	}
 }
